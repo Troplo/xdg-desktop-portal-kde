@@ -7,7 +7,7 @@
 
 #include "background.h"
 #include "background_debug.h"
-#include "waylandintegration.h"
+#include "wayland/waylandintegration.h"
 
 #include <QDBusConnection>
 #include <QDBusContext>

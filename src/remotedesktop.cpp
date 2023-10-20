@@ -13,7 +13,7 @@
 #include "request.h"
 #include "session.h"
 #include "utils.h"
-#include "waylandintegration.h"
+#include "wayland/waylandintegration.h"
 #include <KLocalizedString>
 #include <KNotification>
 #include <QGuiApplication>
