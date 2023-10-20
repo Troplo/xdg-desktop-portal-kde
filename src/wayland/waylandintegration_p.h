@@ -15,8 +15,11 @@
 #include <QList>
 #include <QMap>
 
+#include <memory>
+
 class Screencasting;
 class ScreencastingStream;
+class XdgImporter;
 
 namespace KWayland
 {
@@ -29,7 +32,6 @@ class PlasmaWindow;
 class PlasmaWindowManagement;
 class FakeInput;
 class RemoteBuffer;
-class XdgImporter;
 }
 }
 
@@ -53,7 +55,6 @@ private:
 
     KWayland::Client::Registry *m_registry = nullptr;
     KWayland::Client::PlasmaWindowManagement *m_windowManagement = nullptr;
-    KWayland::Client::XdgImporter *m_xdgImporter = nullptr;
 
 public:
     void authenticate();
@@ -86,7 +87,6 @@ public:
 
 private:
     Stream startStreaming(ScreencastingStream *stream, const QVariantMap &streamOptions);
-    bool eventFilter(QObject *watched, QEvent *event) override;
 
     uint m_streamInput = 0;
     bool m_waylandAuthenticationRequested = false;
@@ -95,7 +95,8 @@ private:
     QList<Stream> m_streams;
 
     KWayland::Client::FakeInput *m_fakeInput = nullptr;
-    Screencasting *m_screencasting = nullptr;
+    Screencasting *m_screencasting;
+    std::unique_ptr<XdgImporter> m_xdgImporter;
 };
 
 }
