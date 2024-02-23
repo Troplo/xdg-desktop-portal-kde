@@ -30,10 +30,16 @@
 #include <KLocalizedString>
 #include <KProcess>
 
-AppChooserDialog::AppChooserDialog(const QStringList &choices, const QString &lastUsedApp, const QString &fileName, const QString &mimeName, QObject *parent)
+AppChooserDialog::AppChooserDialog(const QStringList &choices,
+                                   const QString &lastUsedApp,
+                                   const QString &fileName,
+                                   const QString &mimeName,
+                                   bool autoRemember,
+                                   QObject *parent)
     : QuickDialog(parent)
     , m_model(new AppModel(this))
     , m_appChooserData(new AppChooserData(this))
+    , m_autoRemember(autoRemember)
 {
     QVariantMap props = {
         {"title", i18nc("@title:window", "Choose Application")},
@@ -110,7 +116,9 @@ void AppChooserDialog::onApplicationSelected(const QString &desktopFile, const b
 {
     m_selectedApplication = desktopFile;
 
-    if (remember && !m_appChooserData->mimeName().isEmpty()) {
+    // When used by the private interface for plasma-integration autoremember is off and plasma-integration takes
+    // care of remembering.
+    if (m_autoRemember && remember && !m_appChooserData->mimeName().isEmpty()) {
         KService::Ptr serv = KService::serviceByDesktopName(desktopFile);
         KApplicationTrader::setPreferredService(m_appChooserData->mimeName(), serv);
         // kbuildsycoca is the one reading mimeapps.list, so we need to run it now
@@ -535,4 +543,16 @@ void AppModel::loadApplications()
             m_list.append(appItem);
         }
     }
+}
+
+void AppChooserData::setHistory(const QStringList &history)
+{
+    m_history = history;
+    Q_EMIT historyChanged();
+}
+
+void AppChooserData::setShellAccess(bool enable)
+{
+    m_shellAccess = enable;
+    Q_EMIT shellAccessChanged();
 }
