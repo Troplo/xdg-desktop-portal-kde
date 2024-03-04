@@ -21,6 +21,9 @@
 #include <QRegion>
 #include <QScreen>
 
+#include <fcntl.h>
+#include <sys/stat.h>
+
 RemoteDesktopPortal::RemoteDesktopPortal(QObject *parent)
     : QDBusAbstractAdaptor(parent)
 {
@@ -366,4 +369,38 @@ void RemoteDesktopPortal::NotifyTouchUp(const QDBusObjectPath &session_handle, c
     }
 
     WaylandIntegration::requestTouchUp(slot);
+}
+
+#include <sys/socket.h>
+#include <sys/un.h>
+
+QDBusUnixFileDescriptor RemoteDesktopPortal::ConnectToEIS(const QDBusObjectPath &session_handle, const QString &app_id, const QVariantMap &options)
+{
+    Q_UNUSED(options)
+    Q_UNUSED(app_id)
+    qDebug() << "ConnectToEis";
+
+    RemoteDesktopSession *session = qobject_cast<RemoteDesktopSession *>(Session::getSession(session_handle.path()));
+    if (!session) {
+        qCWarning(XdgDesktopPortalKdeRemoteDesktop) << "Tried to call ConnectToEis on non-existing session " << session_handle.path();
+        return QDBusUnixFileDescriptor();
+    }
+
+    auto socketName = qgetenv("LIBEI_SOCKET");
+    if (socketName.isEmpty()) {
+        socketName = "eis-0";
+    }
+    if (!socketName.startsWith('/')) {
+        const auto runtimeDir = qgetenv("XDG_RUNTIME_DIR");
+        socketName = runtimeDir + '/' + socketName;
+    }
+    sockaddr_un addr;
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, socketName.constData(), sizeof(addr.sun_path));
+    if (int fd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0)) {
+        if (::connect(fd, (sockaddr *)(&addr), sizeof(addr)) == 0) {
+            return QDBusUnixFileDescriptor(fd);
+        }
+    }
+    return QDBusUnixFileDescriptor();
 }
