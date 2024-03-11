@@ -10,10 +10,11 @@
 #define XDG_DESKTOP_PORTAL_KDE_REMOTEDESKTOP_H
 
 #include <QDBusAbstractAdaptor>
+#include <QDBusContext>
 #include <QDBusObjectPath>
 #include <QDBusUnixFileDescriptor>
 
-class RemoteDesktopPortal : public QDBusAbstractAdaptor
+class RemoteDesktopPortal : public QDBusAbstractAdaptor, public QDBusContext
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.freedesktop.impl.portal.RemoteDesktop")
