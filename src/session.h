@@ -15,6 +15,7 @@
 #include <QShortcut>
 
 #include "globalshortcuts.h"
+#include "inputcapture.h"
 #include "remotedesktop.h"
 #include "screencast.h"
 #include "waylandintegration.h"
@@ -36,6 +37,7 @@ public:
         ScreenCast = 0,
         RemoteDesktop = 1,
         GlobalShortcuts = 2,
+        InputCapture = 3,
     };
 
     bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) override;
@@ -189,6 +191,30 @@ private:
     QHash<QString, QAction *> m_shortcuts;
     KGlobalAccelInterface *const m_globalAccelInterface;
     KGlobalAccelComponentInterface *const m_component;
+};
+
+class InputCaptureSession : public Session
+{
+    Q_OBJECT
+public:
+    explicit InputCaptureSession(QObject *parent, const QString &appId, const QString &path);
+    ~InputCaptureSession() override;
+
+    SessionType type() const override
+    {
+        return SessionType::InputCapture;
+    }
+
+    InputCapturePortal::State state = InputCapturePortal::State::Disabled;
+
+    InputCapturePortal::Capabilities capabilities() const;
+    void setCapabilities(InputCapturePortal::Capabilities capabilities);
+
+    void addBarrier(int x1, int y1, int x2, int y2);
+
+private:
+    InputCapturePortal::Capabilities m_capabilities;
+    QList<QLine> m_barriers;
 };
 
 #endif // XDG_DESKTOP_PORTAL_KDE_SESSION_H

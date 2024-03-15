@@ -135,6 +135,8 @@ Session *Session::createSession(QObject *parent, SessionType type, const QString
     case GlobalShortcuts:
         session = new GlobalShortcutsSession(parent, appId, path);
         break;
+    case InputCapture:
+        session = new InputCaptureSession(parent, appId, path);
     }
 
     if (sessionBus.registerVirtualObject(path, session, QDBusConnection::VirtualObjectRegisterOption::SubPath)) {
@@ -450,4 +452,27 @@ Shortcuts GlobalShortcutsSession::shortcutDescriptions() const
     }
     Q_ASSERT(ret.size() == m_shortcuts.size());
     return ret;
+}
+
+InputCaptureSession::InputCaptureSession(QObject *parent, const QString &appId, const QString &path)
+    : Session(parent, appId, path)
+{
+}
+
+InputCaptureSession::~InputCaptureSession()
+{
+}
+
+InputCapturePortal::Capabilities InputCaptureSession::capabilities() const
+{
+    return m_capabilities;
+}
+void InputCaptureSession::setCapabilities(InputCapturePortal::Capabilities capabilities)
+{
+    m_capabilities = capabilities;
+}
+
+void InputCaptureSession::addBarrier(int x1, int y1, int x2, int y2)
+{
+    m_barriers.emplace_back(x1, y1, x2, y2);
 }
